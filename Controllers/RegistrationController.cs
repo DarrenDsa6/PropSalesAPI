@@ -17,8 +17,8 @@ namespace PropSalesAPI.Controllers
             _context = context;
         }
 
-        [HttpPut("Broker")]
-        public IActionResult RegisterBroker([FromBody] RegisterBrokerRequest request)
+        [HttpPost("Broker")]
+        public IActionResult RegisterBroker([FromBody] RegisterUserRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -40,7 +40,7 @@ namespace PropSalesAPI.Controllers
         }
 
         [HttpPost("User")]
-        public IActionResult RegisterUser([FromBody] RegisterBrokerRequest request)
+        public IActionResult RegisterUser([FromBody] RegisterUserRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -49,7 +49,7 @@ namespace PropSalesAPI.Controllers
             {
                 Name = request.Name,
                 UserName = request.UserName,
-                Password = request.Password, // Consider hashing passwords
+                Password = request.Password, 
                 ContactNumber = request.ContactNumber,
                 Address = request.Address,
                 Pincode = request.Pincode,
