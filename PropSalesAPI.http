@@ -1,0 +1,6 @@
+@PropSalesAPI_HostAddress = http://localhost:5176
+
+GET {{PropSalesAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
