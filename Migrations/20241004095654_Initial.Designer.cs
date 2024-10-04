@@ -12,7 +12,7 @@ using PropertySales.Data;
 namespace PropSalesAPI.Migrations
 {
     [DbContext(typeof(PropertySalesDbContext))]
-    [Migration("20241003113339_Initial")]
+    [Migration("20241004095654_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -24,6 +24,28 @@ namespace PropSalesAPI.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("PropertyImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("PropertyId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PropertyId");
+
+                    b.ToTable("PropertyImage");
+                });
 
             modelBuilder.Entity("PropertySales.Models.Domain.Broker", b =>
                 {
@@ -79,10 +101,6 @@ namespace PropSalesAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Images")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -158,12 +176,12 @@ namespace PropSalesAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
 
+                    b.Property<long>("AadhaarCard")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Address")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("AdhaarCard")
-                        .HasColumnType("bigint");
 
                     b.Property<int?>("BrokerId")
                         .HasColumnType("int");
@@ -217,6 +235,13 @@ namespace PropSalesAPI.Migrations
                     b.HasIndex("TransactionId");
 
                     b.ToTable("BrokerSales");
+                });
+
+            modelBuilder.Entity("PropertyImage", b =>
+                {
+                    b.HasOne("PropertySales.Models.Domain.Property", null)
+                        .WithMany("PropertyImages")
+                        .HasForeignKey("PropertyId");
                 });
 
             modelBuilder.Entity("PropertySales.Models.Domain.Property", b =>
@@ -297,6 +322,8 @@ namespace PropSalesAPI.Migrations
 
             modelBuilder.Entity("PropertySales.Models.Domain.Property", b =>
                 {
+                    b.Navigation("PropertyImages");
+
                     b.Navigation("Transactions");
                 });
 

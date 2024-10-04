@@ -33,7 +33,7 @@ namespace PropSalesAPI.Controllers
                 ContactNumber = request.ContactNumber,
                 Address = request.Address,
                 Pincode = request.Pincode,
-                AdhaarCard = request.AdhaarCard
+                AdhaarCard = request.AadhaarCard
             };
 
             await _context.Brokers.AddAsync(broker); // Use async method
@@ -55,7 +55,7 @@ namespace PropSalesAPI.Controllers
                 ContactNumber = request.ContactNumber,
                 Address = request.Address,
                 Pincode = request.Pincode,
-                AdhaarCard = request.AdhaarCard
+                AadhaarCard = request.AadhaarCard
             };
 
             await _context.Users.AddAsync(user); // Use async method

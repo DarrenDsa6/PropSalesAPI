@@ -8,6 +8,6 @@
         public long ContactNumber { get; set; }
         public string Address { get; set; }
         public long Pincode { get; set; }
-        public long AdhaarCard { get; set; }
+        public long AadhaarCard { get; set; }
     }
 }

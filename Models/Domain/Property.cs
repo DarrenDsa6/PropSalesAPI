@@ -1,5 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PropertySales.Models.Domain
 {
@@ -27,7 +28,7 @@ namespace PropertySales.Models.Domain
 
         public string Amenities { get; set; }
 
-        public string Images { get; set; } // Store file paths or URLs
+        public virtual ICollection<PropertyImage> PropertyImages { get; set; } = new List<PropertyImage>();
 
         [Required]
         [Column(TypeName = "varchar(10)")]
@@ -37,7 +38,8 @@ namespace PropertySales.Models.Domain
         public int AddedBy { get; set; }
 
         public virtual User User { get; set; }
-        public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>(); // Initialize
+
+        public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
     }
 
     public enum PropertyType

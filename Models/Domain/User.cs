@@ -29,7 +29,7 @@ namespace PropertySales.Models.Domain
         public long Pincode { get; set; }
 
         [Required]
-        public long AdhaarCard { get; set; }
+        public long AadhaarCard { get; set; }
 
         [ForeignKey("Broker")]
         public int? BrokerId { get; set; }

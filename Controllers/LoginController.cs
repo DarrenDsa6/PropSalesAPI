@@ -26,14 +26,12 @@ namespace PropSalesAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Check if the user exists in the database
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.UserName == request.UserName); // Use async method
 
             if (user == null)
                 return Unauthorized("Invalid username or password.");
 
-            // Replace this with a proper password hashing check
             if (user.Password != request.Password) // Use hashed password comparison
                 return Unauthorized("Invalid username or password.");
 
