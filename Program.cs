@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using PropertySales.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +25,9 @@ builder.Services.AddCors(options =>
         });
 });
 
+
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -36,6 +40,12 @@ app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "Uploads")),
+    RequestPath = "/uploads"
+});
 
 app.UseAuthorization();
 

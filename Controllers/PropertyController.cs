@@ -13,17 +13,17 @@ using System.Threading.Tasks;
 [ApiController]
 public class PropertyController : ControllerBase
 {
-    private readonly PropertySalesDbContext _context; // Replace with your actual DbContext
+    private readonly PropertySalesDbContext _context;
     private readonly string _storagePath;
+    private readonly IConfiguration _configuration; // Declare a private field for IConfiguration
 
     public PropertyController(PropertySalesDbContext context, IConfiguration configuration)
     {
         _context = context;
-        // Combine the project directory with the Uploads folder
-        var uploadsFolder = configuration["ImageStorage:Path"];
+        _configuration = configuration; // Assign the injected configuration to the field
+        var uploadsFolder = _configuration["ImageStorage:Path"];
         _storagePath = Path.Combine(Directory.GetCurrentDirectory(), uploadsFolder);
 
-        // Ensure the directory exists
         if (!Directory.Exists(_storagePath))
         {
             Directory.CreateDirectory(_storagePath);
@@ -68,15 +68,17 @@ public class PropertyController : ControllerBase
         {
             if (file.Length > 0)
             {
-                var fileName = Path.GetFileName(file.FileName);
-                var filePath = Path.Combine(_storagePath, fileName);
+                var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                var relativeFilePath = $"{_configuration["ImageStorage:Path"] ?? "Uploads"}/{uniqueFileName}"; // Now using the class-level field
+
+                var filePath = Path.Combine(_storagePath, uniqueFileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
                 }
 
-                property.PropertyImages.Add(new PropertyImage { FilePath = filePath });
+                property.PropertyImages.Add(new PropertyImage { FilePath = relativeFilePath });
             }
         }
 
@@ -90,7 +92,7 @@ public class PropertyController : ControllerBase
     public async Task<IActionResult> GetAllProperties()
     {
         var properties = await _context.Properties
-            .Include(p => p.PropertyImages) // Include images if needed
+            .Include(p => p.PropertyImages)
             .ToListAsync();
 
         return Ok(properties);

@@ -5,6 +5,7 @@ using PropertySales.Models.Domain;
 using Microsoft.EntityFrameworkCore; // Import this for DbContext extensions
 using System.Collections.Generic; // Import this for List<T>
 using System.Threading.Tasks; // Import this for Task
+using Microsoft.Extensions.Configuration;
 
 namespace PropSalesAPI.Controllers
 {
@@ -13,10 +14,12 @@ namespace PropSalesAPI.Controllers
     public class AdminController : ControllerBase
     {
         private readonly PropertySalesDbContext _context;
+        private readonly string _imageBasePath;
 
-        public AdminController(PropertySalesDbContext context)
+        public AdminController(PropertySalesDbContext context ,IConfiguration configuration)
         {
             _context = context;
+            _imageBasePath = configuration["ImageStorage:Path"];
         }
 
         [HttpGet("GetBrokers")]
@@ -42,15 +45,31 @@ namespace PropSalesAPI.Controllers
         }
 
         [HttpGet("GetProperties")]
-        public async Task<IActionResult> getProperties()
+        public async Task<IActionResult> GetProperties()
         {
-            List<Property> properties = await _context.Properties.ToListAsync(); // Use async method
-            if (properties == null || properties.Count == 0)
+            var properties = await _context.Properties
+                .Include(p => p.PropertyImages) // Include PropertyImages
+                .ToListAsync();
+
+            if (properties?.Count == 0) // Simplified null check
             {
-                return NotFound("No properties found."); // Corrected message
+                return NotFound("No properties found.");
             }
+
+            // Update the file paths to be web-accessible URLs
+            foreach (var property in properties)
+            {
+                foreach (var image in property.PropertyImages)
+                {
+                    // Replace the local file path with a web-accessible one
+                    image.FilePath = image.FilePath
+                        .Replace(Path.Combine(Directory.GetCurrentDirectory(), _imageBasePath) + "\\", "/Uploads/");
+                }
+            }
+
             return Ok(properties);
         }
+
 
         [HttpGet("GetTransactions")]
         public async Task<IActionResult> getTransactions()
