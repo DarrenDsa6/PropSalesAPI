@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PropertySales.Data;
 using PropertySales.Models.ViewModels;
+using System.Threading.Tasks; // Import this for Task
 
 namespace PropSalesAPI.Controllers
 {
@@ -19,17 +21,19 @@ namespace PropSalesAPI.Controllers
         }
 
         [HttpPost("LoginUser")]
-        public IActionResult LoginUser([FromBody] UserLoginValidation request)
+        public async Task<IActionResult> LoginUser([FromBody] UserLoginValidation request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             // Check if the user exists in the database
-            var user = _context.Users.FirstOrDefault(u => u.UserName == request.UserName);
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserName == request.UserName); // Use async method
 
             if (user == null)
                 return Unauthorized("Invalid username or password.");
 
+            // Replace this with a proper password hashing check
             if (user.Password != request.Password) // Use hashed password comparison
                 return Unauthorized("Invalid username or password.");
 
@@ -37,22 +41,23 @@ namespace PropSalesAPI.Controllers
         }
 
         [HttpPost("LoginBroker")]
-        public IActionResult LoginBroker([FromBody] UserLoginValidation request) {
+        public async Task<IActionResult> LoginBroker([FromBody] UserLoginValidation request)
+        {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Check if the user exists in the database
-            var user = _context.Brokers.FirstOrDefault(u => u.UserName == request.UserName);
+            // Check if the broker exists in the database
+            var user = await _context.Brokers
+                .FirstOrDefaultAsync(u => u.UserName == request.UserName); // Use async method
 
             if (user == null)
                 return Unauthorized("Invalid username or password.");
 
+            // Replace this with a proper password hashing check
             if (user.Password != request.Password) // Use hashed password comparison
                 return Unauthorized("Invalid username or password.");
 
             return Ok(new { userId = user.BrokerId, userName = user.UserName });
-
         }
-
     }
 }

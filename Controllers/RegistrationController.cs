@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using PropertySales.Data;
 using PropertySales.Models.Domain;
 using PropertySalesAPI.Models.ViewModels;
+using System.Threading.Tasks; // Import this for Task
+using Microsoft.EntityFrameworkCore; // Import this for DbContext extensions
 
 namespace PropSalesAPI.Controllers
 {
@@ -18,7 +20,7 @@ namespace PropSalesAPI.Controllers
         }
 
         [HttpPost("Broker")]
-        public IActionResult RegisterBroker([FromBody] RegisterUserRequest request)
+        public async Task<IActionResult> RegisterBroker([FromBody] RegisterUserRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -34,13 +36,13 @@ namespace PropSalesAPI.Controllers
                 AdhaarCard = request.AdhaarCard
             };
 
-            _context.Brokers.Add(broker);
-            _context.SaveChanges();
+            await _context.Brokers.AddAsync(broker); // Use async method
+            await _context.SaveChangesAsync(); // Use async method
             return Ok(broker);
         }
 
         [HttpPost("User")]
-        public IActionResult RegisterUser([FromBody] RegisterUserRequest request)
+        public async Task<IActionResult> RegisterUser([FromBody] RegisterUserRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -49,15 +51,15 @@ namespace PropSalesAPI.Controllers
             {
                 Name = request.Name,
                 UserName = request.UserName,
-                Password = request.Password, 
+                Password = request.Password, // Consider hashing passwords
                 ContactNumber = request.ContactNumber,
                 Address = request.Address,
                 Pincode = request.Pincode,
                 AdhaarCard = request.AdhaarCard
             };
 
-            _context.Users.Add(user);
-            _context.SaveChanges();
+            await _context.Users.AddAsync(user); // Use async method
+            await _context.SaveChangesAsync(); // Use async method
             return Ok(user);
         }
     }
