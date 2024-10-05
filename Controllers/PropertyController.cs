@@ -15,13 +15,11 @@ public class PropertyController : ControllerBase
 {
     private readonly PropertySalesDbContext _context;
     private readonly string _storagePath;
-    private readonly IConfiguration _configuration; // Declare a private field for IConfiguration
 
     public PropertyController(PropertySalesDbContext context, IConfiguration configuration)
     {
         _context = context;
-        _configuration = configuration; // Assign the injected configuration to the field
-        var uploadsFolder = _configuration["ImageStorage:Path"];
+        var uploadsFolder = configuration["ImageStorage:Path"];
         _storagePath = Path.Combine(Directory.GetCurrentDirectory(), uploadsFolder);
 
         if (!Directory.Exists(_storagePath))
@@ -68,17 +66,15 @@ public class PropertyController : ControllerBase
         {
             if (file.Length > 0)
             {
-                var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                var relativeFilePath = $"{_configuration["ImageStorage:Path"] ?? "Uploads"}/{uniqueFileName}"; // Now using the class-level field
-
-                var filePath = Path.Combine(_storagePath, uniqueFileName);
+                var fileName = Path.GetFileNameWithoutExtension(file.FileName) + "_" + Guid.NewGuid() + Path.GetExtension(file.FileName);
+                var filePath = Path.Combine(_storagePath, fileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
                 }
 
-                property.PropertyImages.Add(new PropertyImage { FilePath = relativeFilePath });
+                property.PropertyImages.Add(new PropertyImage { FilePath = fileName });
             }
         }
 
@@ -96,5 +92,70 @@ public class PropertyController : ControllerBase
             .ToListAsync();
 
         return Ok(properties);
+    }
+
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> EditProperty(int id, [FromBody] PropertyUploadRequest request)
+    {
+        var property = await _context.Properties.Include(p => p.PropertyImages).FirstOrDefaultAsync(p => p.PropertyId == id);
+
+        if (property == null)
+        {
+            return NotFound($"Property with ID {id} not found.");
+        }
+
+        if (request.PropertyType != null)
+        {
+            property.PropertyType = request.PropertyType;
+        }
+
+        if (!string.IsNullOrEmpty(request.Location))
+        {
+            property.Location = request.Location;
+        }
+
+        if (!string.IsNullOrEmpty(request.Pincode))
+        {
+            property.Pincode = request.Pincode;
+        }
+
+        if (request.Price > 0)
+        {
+            property.Price = request.Price;
+        }
+
+        if (!string.IsNullOrEmpty(request.Description))
+        {
+            property.Description = request.Description;
+        }
+
+        if (!string.IsNullOrEmpty(request.Amenities))
+        {
+            property.Amenities = request.Amenities;
+        }
+
+        if (request.Status != null)
+        {
+            property.Status = request.Status;
+        }
+
+
+        await _context.SaveChangesAsync();
+
+        return Ok(property);
+    }
+
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteProperty(int id)
+    {
+        var property = await _context.Properties.Include(p => p.PropertyImages).FirstOrDefaultAsync(p => p.PropertyId == id);
+
+        if (property == null)
+        {
+            return NotFound($"No Entry with id: {id}");
+        }
+        _context.Properties.Remove(property);
+        return Ok(property);
     }
 }

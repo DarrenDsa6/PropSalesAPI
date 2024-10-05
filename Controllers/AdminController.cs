@@ -81,5 +81,45 @@ namespace PropSalesAPI.Controllers
             }
             return Ok(transactions);
         }
+
+
+        [HttpDelete("Property{id}")]
+        public async Task<IActionResult> DeleteProperty(int id)
+        {
+            var property = await _context.Properties.Include(p => p.PropertyImages).FirstOrDefaultAsync(p => p.PropertyId == id);
+
+            if (property == null)
+            {
+                return NotFound($"No Entry with id: {id}");
+            }
+            _context.Properties.Remove(property);
+            return Ok(property);
+        }
+
+        [HttpDelete("User{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(p => p.UserId == id);
+
+            if (user == null)
+            {
+                return NotFound($"No Entry with id: {id}");
+            }
+            _context.Users.Remove(user);
+            return Ok(user);
+        }
+
+        [HttpDelete("Broker{id}")]
+        public async Task<IActionResult> DeleteBroker(int id)
+        {
+            var broker = await _context.Brokers.FirstOrDefaultAsync(p => p.BrokerId == id);
+
+            if (broker == null)
+            {
+                return NotFound($"No Entry with id: {id}");
+            }
+            _context.Brokers.Remove(broker);
+            return Ok(broker);
+        }
     }
 }
