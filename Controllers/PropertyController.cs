@@ -13,15 +13,18 @@ using System.Threading.Tasks;
 [ApiController]
 public class PropertyController : ControllerBase
 {
-    private readonly PropertySalesDbContext _context;
+
+    private readonly PropertySalesDbContext _context; // Replace with your actual DbContext
     private readonly string _storagePath;
 
     public PropertyController(PropertySalesDbContext context, IConfiguration configuration)
     {
         _context = context;
+        // Combine the project directory with the Uploads folder
         var uploadsFolder = configuration["ImageStorage:Path"];
         _storagePath = Path.Combine(Directory.GetCurrentDirectory(), uploadsFolder);
 
+        // Ensure the directory exists
         if (!Directory.Exists(_storagePath))
         {
             Directory.CreateDirectory(_storagePath);
@@ -66,7 +69,7 @@ public class PropertyController : ControllerBase
         {
             if (file.Length > 0)
             {
-                var fileName = Path.GetFileNameWithoutExtension(file.FileName) + "_" + Guid.NewGuid() + Path.GetExtension(file.FileName);
+                var fileName = Path.GetFileName(file.FileName);
                 var filePath = Path.Combine(_storagePath, fileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
@@ -74,7 +77,7 @@ public class PropertyController : ControllerBase
                     await file.CopyToAsync(stream);
                 }
 
-                property.PropertyImages.Add(new PropertyImage { FilePath = fileName });
+                property.PropertyImages.Add(new PropertyImage { FilePath = filePath });
             }
         }
 
@@ -88,7 +91,7 @@ public class PropertyController : ControllerBase
     public async Task<IActionResult> GetAllProperties()
     {
         var properties = await _context.Properties
-            .Include(p => p.PropertyImages)
+            .Include(p => p.PropertyImages) // Include images if needed
             .ToListAsync();
 
         return Ok(properties);

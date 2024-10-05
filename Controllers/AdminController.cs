@@ -90,7 +90,7 @@ namespace PropSalesAPI.Controllers
 
             if (property == null)
             {
-                return NotFound($"No Entry with id: {id}");
+                return NotFound($"No Property with id: {id}");
             }
             _context.Properties.Remove(property);
             return Ok(property);
@@ -103,7 +103,7 @@ namespace PropSalesAPI.Controllers
 
             if (user == null)
             {
-                return NotFound($"No Entry with id: {id}");
+                return NotFound($"No User with id: {id}");
             }
             _context.Users.Remove(user);
             return Ok(user);
@@ -116,7 +116,7 @@ namespace PropSalesAPI.Controllers
 
             if (broker == null)
             {
-                return NotFound($"No Entry with id: {id}");
+                return NotFound($"No Broker with id: {id}");
             }
             _context.Brokers.Remove(broker);
             return Ok(broker);
