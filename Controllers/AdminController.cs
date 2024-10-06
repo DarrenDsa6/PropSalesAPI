@@ -2,10 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using PropertySales.Data;
 using PropertySales.Models.Domain;
-using Microsoft.EntityFrameworkCore; // Import this for DbContext extensions
-using System.Collections.Generic; // Import this for List<T>
-using System.Threading.Tasks; // Import this for Task
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace PropSalesAPI.Controllers
 {
@@ -16,16 +17,16 @@ namespace PropSalesAPI.Controllers
         private readonly PropertySalesDbContext _context;
         private readonly string _imageBasePath;
 
-        public AdminController(PropertySalesDbContext context ,IConfiguration configuration)
+        public AdminController(PropertySalesDbContext context, IConfiguration configuration)
         {
             _context = context;
             _imageBasePath = configuration["ImageStorage:Path"];
         }
 
-        [HttpGet("GetBrokers")]
-        public async Task<IActionResult> getBrokers()
+        [HttpGet("brokers")]
+        public async Task<ActionResult<List<Broker>>> GetBrokers()
         {
-            List<Broker> brokers = await _context.Brokers.ToListAsync(); // Use async method
+            var brokers = await _context.Brokers.ToListAsync();
             if (brokers == null || brokers.Count == 0)
             {
                 return NotFound("No brokers found.");
@@ -33,35 +34,55 @@ namespace PropSalesAPI.Controllers
             return Ok(brokers);
         }
 
-        [HttpGet("GetCustomers")]
-        public async Task<IActionResult> getCustomers()
+        [HttpGet("broker/{id}")]
+        public async Task<ActionResult<Broker>> GetBroker(int id)
         {
-            List<User> users = await _context.Users.ToListAsync(); // Use async method
+            var broker = await _context.Brokers.FindAsync(id);
+            if (broker == null)
+            {
+                return NotFound($"No Broker with id: {id}");
+            }
+            return Ok(broker);
+        }
+
+        [HttpGet("customers")]
+        public async Task<ActionResult<List<User>>> GetCustomers()
+        {
+            var users = await _context.Users.ToListAsync();
             if (users == null || users.Count == 0)
             {
-                return NotFound("No users found."); // Corrected message
+                return NotFound("No users found.");
             }
             return Ok(users);
         }
 
-        [HttpGet("GetProperties")]
-        public async Task<IActionResult> GetProperties()
+        [HttpGet("user/{id}")]
+        public async Task<ActionResult<User>> GetUser(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound($"No User with id: {id}");
+            }
+            return Ok(user);
+        }
+
+        [HttpGet("properties")]
+        public async Task<ActionResult<List<Property>>> GetProperties()
         {
             var properties = await _context.Properties
-                .Include(p => p.PropertyImages) // Include PropertyImages
+                .Include(p => p.PropertyImages)
                 .ToListAsync();
 
-            if (properties?.Count == 0) // Simplified null check
+            if (properties?.Count == 0)
             {
                 return NotFound("No properties found.");
             }
 
-            // Update the file paths to be web-accessible URLs
             foreach (var property in properties)
             {
                 foreach (var image in property.PropertyImages)
                 {
-                    // Replace the local file path with a web-accessible one
                     image.FilePath = image.FilePath
                         .Replace(Path.Combine(Directory.GetCurrentDirectory(), _imageBasePath) + "\\", "/Uploads/");
                 }
@@ -70,56 +91,60 @@ namespace PropSalesAPI.Controllers
             return Ok(properties);
         }
 
-
-        [HttpGet("GetTransactions")]
-        public async Task<IActionResult> getTransactions()
+        [HttpGet("transactions")]
+        public async Task<ActionResult<List<Transaction>>> GetTransactions()
         {
-            List<Transaction> transactions = await _context.Transactions.ToListAsync(); // Use async method
+            var transactions = await _context.Transactions.ToListAsync();
             if (transactions == null || transactions.Count == 0)
             {
-                return NotFound("No transactions found."); // Corrected message
+                return NotFound("No transactions found.");
             }
             return Ok(transactions);
         }
 
-
-        [HttpDelete("Property{id}")]
+        [HttpDelete("property/{id}")]
         public async Task<IActionResult> DeleteProperty(int id)
         {
-            var property = await _context.Properties.Include(p => p.PropertyImages).FirstOrDefaultAsync(p => p.PropertyId == id);
+            var property = await _context.Properties
+                .Include(p => p.PropertyImages)
+                .FirstOrDefaultAsync(p => p.PropertyId == id);
 
             if (property == null)
             {
                 return NotFound($"No Property with id: {id}");
             }
+
             _context.Properties.Remove(property);
-            return Ok(property);
+            await _context.SaveChangesAsync(); // Persist changes
+            return NoContent(); // Return 204 No Content
         }
 
-        [HttpDelete("User{id}")]
+        [HttpDelete("user/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(p => p.UserId == id);
-
+            var user = await _context.Users.FindAsync(id);
             if (user == null)
             {
                 return NotFound($"No User with id: {id}");
             }
+
             _context.Users.Remove(user);
-            return Ok(user);
+            await _context.SaveChangesAsync(); // Persist changes
+            return NoContent(); // Return 204 No Content
         }
 
-        [HttpDelete("Broker{id}")]
+        [HttpDelete("broker/{id}")]
         public async Task<IActionResult> DeleteBroker(int id)
         {
-            var broker = await _context.Brokers.FirstOrDefaultAsync(p => p.BrokerId == id);
-
+            var broker = await _context.Brokers.FindAsync(id);
             if (broker == null)
             {
                 return NotFound($"No Broker with id: {id}");
             }
+
             _context.Brokers.Remove(broker);
-            return Ok(broker);
+            await _context.SaveChangesAsync(); // Persist changes
+            return NoContent(); // Return 204 No Content
         }
     }
 }

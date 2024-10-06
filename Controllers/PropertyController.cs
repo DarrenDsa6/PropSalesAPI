@@ -98,54 +98,75 @@ public class PropertyController : ControllerBase
     }
 
     [HttpPatch("{id}")]
-    public async Task<IActionResult> EditProperty(int id, [FromBody] PropertyUploadRequest request)
+    public async Task<IActionResult> UpdatePropertyPartial(int id, [FromBody] PropertyPatchDto request)
     {
-        var property = await _context.Properties.Include(p => p.PropertyImages).FirstOrDefaultAsync(p => p.PropertyId == id);
+        // Fetch the existing property from your data source
+        var existingProperty = await _context.Properties
+            .Include(p => p.PropertyImages) // Include images if needed
+            .FirstOrDefaultAsync(p => p.PropertyId == id);
 
-        if (property == null)
+        if (existingProperty == null)
         {
             return NotFound($"Property with ID {id} not found.");
         }
-
-        if (request.PropertyType != null)
+        if (request.PropertyType.HasValue)
         {
-            property.PropertyType = request.PropertyType;
+            existingProperty.PropertyType = request.PropertyType.Value;
         }
 
         if (!string.IsNullOrEmpty(request.Location))
         {
-            property.Location = request.Location;
+            existingProperty.Location = request.Location;
         }
 
         if (!string.IsNullOrEmpty(request.Pincode))
         {
-            property.Pincode = request.Pincode;
+            existingProperty.Pincode = request.Pincode;
         }
 
-        if (request.Price > 0)
+        if (request.Price.HasValue)
         {
-            property.Price = request.Price;
+            existingProperty.Price = request.Price.Value;
         }
 
         if (!string.IsNullOrEmpty(request.Description))
         {
-            property.Description = request.Description;
+            existingProperty.Description = request.Description;
         }
 
         if (!string.IsNullOrEmpty(request.Amenities))
         {
-            property.Amenities = request.Amenities;
+            existingProperty.Amenities = request.Amenities;
         }
 
-        if (request.Status != null)
+        if (request.Status.HasValue)
         {
-            property.Status = request.Status;
+            existingProperty.Status = request.Status.Value;
         }
 
+        // Handle ImageFiles if provided in the request
+        if (request.ImageFiles != null && request.ImageFiles.Any())
+        {
+            foreach (var file in request.ImageFiles)
+            {
+                if (file.Length > 0)
+                {
+                    var fileName = Path.GetFileName(file.FileName);
+                    var filePath = Path.Combine(_storagePath, fileName);
 
-        await _context.SaveChangesAsync();
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
 
-        return Ok(property);
+                    existingProperty.PropertyImages.Add(new PropertyImage { FilePath = filePath });
+                }
+            }
+        }
+
+        await _context.SaveChangesAsync(); // Save changes to the database
+
+        return NoContent(); // Return a response indicating success
     }
 
 
