@@ -18,6 +18,7 @@ namespace PropSalesAPI.Controllers
             _context = context;
         }
 
+
         [HttpGet("Transactions")]
         public async Task<IActionResult> GetTransactions()
         {
@@ -40,6 +41,7 @@ namespace PropSalesAPI.Controllers
 
             return Ok(transactionDtos);
         }
+
 
         [HttpPost("AddTransaction")]
         public async Task<IActionResult> AddTransaction([FromBody] CreateTransactionDto createTransactionDto)

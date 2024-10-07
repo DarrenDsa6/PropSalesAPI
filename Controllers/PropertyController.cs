@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
+
 [Route("api/[controller]")]
 [ApiController]
 public class PropertyController : ControllerBase
@@ -109,17 +110,19 @@ public class PropertyController : ControllerBase
         {
             return NotFound($"Property with ID {id} not found.");
         }
+
+        // Update fields only if they have values in the request
         if (request.PropertyType.HasValue)
         {
             existingProperty.PropertyType = request.PropertyType.Value;
         }
 
-        if (!string.IsNullOrEmpty(request.Location))
+        if (!string.IsNullOrWhiteSpace(request.Location))
         {
             existingProperty.Location = request.Location;
         }
 
-        if (!string.IsNullOrEmpty(request.Pincode))
+        if (!string.IsNullOrWhiteSpace(request.Pincode))
         {
             existingProperty.Pincode = request.Pincode;
         }
@@ -129,12 +132,12 @@ public class PropertyController : ControllerBase
             existingProperty.Price = request.Price.Value;
         }
 
-        if (!string.IsNullOrEmpty(request.Description))
+        if (!string.IsNullOrWhiteSpace(request.Description))
         {
             existingProperty.Description = request.Description;
         }
 
-        if (!string.IsNullOrEmpty(request.Amenities))
+        if (!string.IsNullOrWhiteSpace(request.Amenities))
         {
             existingProperty.Amenities = request.Amenities;
         }
@@ -154,6 +157,9 @@ public class PropertyController : ControllerBase
                     var fileName = Path.GetFileName(file.FileName);
                     var filePath = Path.Combine(_storagePath, fileName);
 
+                    // Ensure the directory exists
+                    Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         await file.CopyToAsync(stream);
@@ -163,8 +169,7 @@ public class PropertyController : ControllerBase
                 }
             }
         }
-
-        await _context.SaveChangesAsync(); // Save changes to the database
+        await _context.SaveChangesAsync();
 
         return NoContent(); // Return a response indicating success
     }
@@ -180,6 +185,7 @@ public class PropertyController : ControllerBase
             return NotFound($"No Entry with id: {id}");
         }
         _context.Properties.Remove(property);
+        await _context.SaveChangesAsync();
         return Ok(property);
     }
 }

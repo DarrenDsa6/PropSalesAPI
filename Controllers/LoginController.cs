@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PropertySales.Data;
 using PropertySales.Models.ViewModels;
-using System.Threading.Tasks; // Import this for Task
+using System.Threading.Tasks; 
 
 namespace PropSalesAPI.Controllers
 {
