@@ -99,7 +99,7 @@ public class PropertyController : ControllerBase
     }
 
     [HttpPatch("{id}")]
-    public async Task<IActionResult> UpdatePropertyPartial(int id, [FromBody] PropertyPatchDto request)
+    public async Task<IActionResult> UpdatePropertyPartial(int id, [FromForm] PropertyPatchDto request)
     {
         // Fetch the existing property from your data source
         var existingProperty = await _context.Properties
@@ -186,6 +186,18 @@ public class PropertyController : ControllerBase
         }
         _context.Properties.Remove(property);
         await _context.SaveChangesAsync();
+        return Ok(property);
+    }
+
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetPropertiesByUserId(int id)
+    {
+        var property = await _context.Properties.Where(p => p.AddedBy == id).ToListAsync();
+        if (property == null)
+        {
+            return NotFound($"No properties added by the user with id:{id}");
+        }
         return Ok(property);
     }
 }
