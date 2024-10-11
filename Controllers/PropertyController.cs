@@ -40,14 +40,6 @@ public class PropertyController : ControllerBase
             return BadRequest("Property data is required.");
         }
 
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.AadhaarCard == request.AadhaarCard);
-
-        if (user == null)
-        {
-            return NotFound($"User with Aadhaar number {request.AadhaarCard} not found.");
-        }
-
         var property = new Property
         {
             PropertyType = request.PropertyType,
@@ -57,7 +49,7 @@ public class PropertyController : ControllerBase
             Description = request.Description,
             Amenities = request.Amenities,
             Status = request.Status,
-            AddedBy = user.UserId,
+            AddedBy = request.UserId,
             PropertyImages = new List<PropertyImage>()
         };
 

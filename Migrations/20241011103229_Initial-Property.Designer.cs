@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PropertySales.Data;
 
@@ -11,9 +12,11 @@ using PropertySales.Data;
 namespace PropSalesAPI.Migrations
 {
     [DbContext(typeof(PropertySalesDbContext))]
-    partial class PropertySalesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241011103229_Initial-Property")]
+    partial class InitialProperty
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

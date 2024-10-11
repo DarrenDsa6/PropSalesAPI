@@ -36,10 +36,6 @@ namespace PropertySales.Models.Domain
 
         [ForeignKey("User")]
         public int AddedBy { get; set; }
-
-        public virtual User User { get; set; }
-
-        public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
     }
 
     public enum PropertyType
